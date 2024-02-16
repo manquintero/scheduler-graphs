@@ -55,7 +55,6 @@ def read_content(report) -> dict:
         s = columns[StressNGHeaders.STRESSOR]
         ops = float(columns[StressNGHeaders.BOGO_OPS_S_REAL_TIME])
         bogos.update({s: ops})
-
     return bogos
 
 
@@ -65,36 +64,64 @@ if __name__ == "__main__":
 
     carrier = dict()
 
-    for configuration in ['SCHED_OTHER', 'SCHED_AUTOGROUP']:
+    for configuration in ['SCHED_OTHER', 'SCHED_AUTOGROUP', 'SCHED_AUTOGROUP_I9']:
         # Initiallize per SCHED
         carrier.update({configuration: {}})
         for report in list_reports(configuration):
             data = read_content(report)
             for stressor, v in data.items():
                 if stressor not in carrier[configuration]:
-                    carrier[configuration][stressor] = pd.DataFrame()
+                    carrier[configuration][stressor] = []
                 carrier[configuration][stressor].append(v)
-    print(carrier)
+
+    # Normalize
+    for scheduder, stressors in carrier.items():
+        stressors_df = pd.DataFrame.from_dict(stressors)
+        for s, values in stressors_df.items():
+            # default
+            # stressors[s] = values
+            # Using The maximum absolute scaling
+            # stressors[s] = values  / values.abs().max()
+            # minmax
+            # stressors[s] = (values - values.min()) / (values.max() - values.min())
+            # mean normalization
+            stressors[s] = (values - values.mean()) / (values.max() - values.min())
+            # z-score
+            # stressors[s] = (values - values.mean()) / values.std()
+
 
     # Graph
-    fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
+    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(10, 10), sharex=True)
 
     # generate some random test data
     for i, sched in enumerate(carrier):
         all_data = [v for _,v in carrier[sched].items()]
         # plot violin plot
-        axs[i].boxplot(all_data)
+        axs[i].boxplot(all_data, showfliers=False)  # showfliers: Show the outliers beyond the caps.
         axs[i].set_title(sched)
 
-        # adding horizontal grid lines
-        stressors = [k for k,_ in carrier[sched].items()]
+    # adding horizontal grid lines
+    stressors = [k for k,_ in carrier[sched].items()]
+    labels = [f'S{i+1}' for i in range(len(carrier[sched].values())) ]
 
     for ax in axs:
         ax.yaxis.grid(True)
-        ax.set_xticks([y + 1 for y in range(len(all_data))], labels=stressors, rotation=45)
+        # ax.set_ylim([0,1])
+        ax.set_xticks([y + 1 for y in range(len(all_data))], labels=labels, rotation=45)
         ax.set_xlabel('Stressors')
-        ax.set_ylabel('Bogo ops/s (real time)')
+        ax.set_ylabel('Normalized Bogo ops/s (real time)')
 
+    # # Add table vertical
+    # columns = ('Name')
+    # cell_text = []
+    # n_rows = len(stressors)
+    # for row in range(n_rows):
+    #     cell_text.append([stressors[row]])
+
+    # plt.table(
+    #     cellText=cell_text,
+    #     rowLabels=labels,
+    #     colLabels=columns,
+    #     loc='right'
+    # )
     plt.show()
-
-    # TODO: https://www.geeksforgeeks.org/data-normalization-with-pandas/
