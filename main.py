@@ -1,20 +1,13 @@
 """Generate BoxPlots from the stress-ng executions."""
 
+import itertools
 import os
 import re
-from enum import IntEnum
 from matplotlib import pyplot as plt
-import numpy as np
 import pandas as pd
 
-# Fixing random state for reproducibility
-np.random.seed(19680801)
-
-
-class StressNGHeaders(IntEnum):
-    """Keeps order of columns reported by stress-ng"""
-    STRESSOR = 0
-    BOGO_OPS_S_REAL_TIME = 5
+from lib.utils import PROCCESORS, CLASS_CPU, SCHEDULERS, StressNGHeaders
+from lib.utils import METRIC_PATTERN
 
 
 def list_reports(directory) -> list:
@@ -50,66 +43,81 @@ def read_content(report) -> dict:
 
     # The first two elements account for the header and the units
     # stressor,"bogo ops","real time","usr time","sys time","bogo ops/s (real time)","bogo ops/s (usr+sys time)"
+    # cpu_stressors = [m for m in m for m in metrics[2:] if m in CLASS_CPU if m in CLASS_CPU]
     for metric in metrics[2:]:
         columns = re.split(r'\s+', metric)
-        s = columns[StressNGHeaders.STRESSOR]
+        stressor = columns[StressNGHeaders.STRESSOR]
         ops = float(columns[StressNGHeaders.BOGO_OPS_S_REAL_TIME])
-        bogos.update({s: ops})
+        if stressor in CLASS_CPU:
+            bogos.update({stressor: ops})
     return bogos
 
 
-METRIC_PATTERN = re.compile(r'stress-ng: metrc: \[\d+\]\s+')
-
 if __name__ == "__main__":
+    results = dict()
 
-    carrier = dict()
+    # Parse stress-ng results from files
+    for processor, scheduler in itertools.product(PROCCESORS, SCHEDULERS):
+        # Initiallize per chiip-sched
+        if processor not in results:
+            results.update({processor: {}})
+        
+        if scheduler not in results[processor]:
+            results[processor].update({scheduler: {}})
 
-    for configuration in ['SCHED_OTHER', 'SCHED_AUTOGROUP', 'SCHED_AUTOGROUP_I9']:
-        # Initiallize per SCHED
-        carrier.update({configuration: {}})
-        for report in list_reports(configuration):
+        report_path = os.path.join(processor, scheduler)
+        for report in list_reports(report_path):
             data = read_content(report)
             for stressor, v in data.items():
-                if stressor not in carrier[configuration]:
-                    carrier[configuration][stressor] = []
-                carrier[configuration][stressor].append(v)
+                if stressor not in results[processor][scheduler]:
+                    results[processor][scheduler][stressor] = []
+                results[processor][scheduler][stressor].append(v)
 
-    # Normalize
-    for scheduder, stressors in carrier.items():
-        stressors_df = pd.DataFrame.from_dict(stressors)
-        for s, values in stressors_df.items():
-            # default
-            # stressors[s] = values
-            # Using The maximum absolute scaling
-            # stressors[s] = values  / values.abs().max()
-            # minmax
-            # stressors[s] = (values - values.min()) / (values.max() - values.min())
-            # mean normalization
-            stressors[s] = (values - values.mean()) / (values.max() - values.min())
-            # z-score
-            # stressors[s] = (values - values.mean()) / values.std()
-
+    # Normalize with Min-Max
+    for processor, schedulers in results.items():
+        for scheduder, stressors in schedulers.items():
+            stressors_df = pd.DataFrame.from_dict(stressors)
+            for s, values in stressors_df.items():
+                stressors[s] = (values - values.min()) / (values.max() - values.min())
 
     # Graph
-    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(10, 10), sharex=True)
+    n_proccessors = len(results.keys())
+    n_schedulers = len(results.items())
 
-    # generate some random test data
-    for i, sched in enumerate(carrier):
-        all_data = [v for _,v in carrier[sched].items()]
-        # plot violin plot
-        axs[i].boxplot(all_data, showfliers=False)  # showfliers: Show the outliers beyond the caps.
-        axs[i].set_title(sched)
+    # fig, axs = plt.subplots(nrows=n_proccessors, ncols=n_schedulers, sharex=False, sharey=True)
+    fig = plt.figure(constrained_layout=True)
+    fig.suptitle('Stress-NG executions by Proccessor and Kernel configuration (Linux 6.1.59)')
+
+    # create subfigs
+    subfigs = fig.subfigures(nrows=n_proccessors, ncols=1)
+    for row, sub_proccesor in enumerate(zip(subfigs,results)):
+        subfig, proccesor = sub_proccesor
+        subfig.suptitle(f'{PROCCESORS[proccesor]}')
+
+        # create 1x2 subplots per subfig
+        axs = subfig.subplots(nrows=1, ncols=n_schedulers)
+        for col, ax_scheduder in enumerate(zip(axs,results[proccesor])):
+            ax, scheduder = ax_scheduder
+            ax.set_title(f'{scheduder}')
+            all_data = list(results[proccesor][scheduder].values())
+            ax.boxplot(all_data, showfliers=False)  # showfliers: Show the outliers beyond the caps.
+            # X labels
+            ax.set_xlabel('Stressors')
+            stressors = list(results[proccesor][scheduder].keys())
+            print(stressors)
+            ax.set_xticks([y + 1 for y in range(len(all_data))], labels=stressors, rotation=45)
+            # Y labels
+            ax.set_ylabel('Normalized Bogo ops/s (real time)')
+            ax.yaxis.grid(True)
+
+    # Unpacakge by processor and scheduler options
+    # for i, processor in enumerate(results):
+    #     for j, scheduder in enumerate(results[processor]):
+            # axs[i][j].boxplot(all_data, showfliers=False)  # showfliers: Show the outliers beyond the caps.
+            # axs[i][j].set_title(f'{scheduder}')
 
     # adding horizontal grid lines
-    stressors = [k for k,_ in carrier[sched].items()]
-    labels = [f'S{i+1}' for i in range(len(carrier[sched].values())) ]
-
-    for ax in axs:
-        ax.yaxis.grid(True)
-        # ax.set_ylim([0,1])
-        ax.set_xticks([y + 1 for y in range(len(all_data))], labels=labels, rotation=45)
-        ax.set_xlabel('Stressors')
-        ax.set_ylabel('Normalized Bogo ops/s (real time)')
+    labels = [f'S{i+1}' for i in range(len(results[processor][scheduder].values())) ]
 
     # # Add table vertical
     # columns = ('Name')
