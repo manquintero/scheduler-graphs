@@ -1,127 +1,79 @@
 """Generate BoxPlots from the stress-ng executions."""
 
+import itertools
 import os
-import re
-from enum import IntEnum
 from matplotlib import pyplot as plt
-import numpy as np
 import pandas as pd
 
-# Fixing random state for reproducibility
-np.random.seed(19680801)
+from lib.utils import PROCCESORS, SCHEDULERS
+from lib.utils import list_reports
+from lib.utils import read_content
 
+# Show normalized data
+is_normalized = True
 
-class StressNGHeaders(IntEnum):
-    """Keeps order of columns reported by stress-ng"""
-    STRESSOR = 0
-    BOGO_OPS_S_REAL_TIME = 5
-
-
-def list_reports(directory) -> list:
-    """return the list of files to be parsed"""
-    search_dir = os.path.join('data', directory)
-    reports = []
-    for _, _, files in os.walk(search_dir, topdown=False):
-        for name in files:
-            reports.append(os.path.join(search_dir, name))
-    return reports
-
-
-def read_file(file) -> str:
-    """returns the raw strings of a file if the process has read access"""
-    return_value = None
-    if os.access(file, os.R_OK):
-        with open(file, encoding='utf8') as fp:
-            return_value = fp.read()
-    return return_value
-
-
-def read_content(report) -> dict:
-    """read a report and return a map of results per operation"""
-    bogos = dict()
-
-    content = read_file(report)
-    metrics = [
-        METRIC_PATTERN.sub('', l) for l in content.splitlines() if METRIC_PATTERN.search(l)
-    ]
-
-    if not metrics:
-        return bogos
-
-    # The first two elements account for the header and the units
-    # stressor,"bogo ops","real time","usr time","sys time","bogo ops/s (real time)","bogo ops/s (usr+sys time)"
-    for metric in metrics[2:]:
-        columns = re.split(r'\s+', metric)
-        s = columns[StressNGHeaders.STRESSOR]
-        ops = float(columns[StressNGHeaders.BOGO_OPS_S_REAL_TIME])
-        bogos.update({s: ops})
-    return bogos
-
-
-METRIC_PATTERN = re.compile(r'stress-ng: metrc: \[\d+\]\s+')
 
 if __name__ == "__main__":
+    results = dict()
 
-    carrier = dict()
+    # Parse stress-ng results from files
+    for processor, scheduler in itertools.product(PROCCESORS, SCHEDULERS):
+        # Initiallize per chiip-sched
+        if processor not in results:
+            results.update({processor: {}})
 
-    for configuration in ['SCHED_OTHER', 'SCHED_AUTOGROUP', 'SCHED_AUTOGROUP_I9']:
-        # Initiallize per SCHED
-        carrier.update({configuration: {}})
-        for report in list_reports(configuration):
+        if scheduler not in results[processor]:
+            results[processor].update({scheduler: {}})
+
+        report_path = os.path.join(processor, scheduler)
+        for report in list_reports(report_path):
             data = read_content(report)
             for stressor, v in data.items():
-                if stressor not in carrier[configuration]:
-                    carrier[configuration][stressor] = []
-                carrier[configuration][stressor].append(v)
+                if stressor not in results[processor][scheduler]:
+                    results[processor][scheduler][stressor] = []
+                results[processor][scheduler][stressor].append(v)
 
-    # Normalize
-    for scheduder, stressors in carrier.items():
-        stressors_df = pd.DataFrame.from_dict(stressors)
-        for s, values in stressors_df.items():
-            # default
-            # stressors[s] = values
-            # Using The maximum absolute scaling
-            # stressors[s] = values  / values.abs().max()
-            # minmax
-            # stressors[s] = (values - values.min()) / (values.max() - values.min())
-            # mean normalization
-            stressors[s] = (values - values.mean()) / (values.max() - values.min())
-            # z-score
-            # stressors[s] = (values - values.mean()) / values.std()
-
+    # Normalize with Min-Max
+    if is_normalized:
+        for processor, schedulers in results.items():
+            for scheduder, stressors in schedulers.items():
+                stressors_df = pd.DataFrame.from_dict(stressors)
+                for s, values in stressors_df.items():
+                    stressors[s] = (values - values.min()) / (values.max() - values.min())
 
     # Graph
-    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(10, 10), sharex=True)
+    n_proccessors = len(results.keys())
+    n_schedulers = len(results.items())
 
-    # generate some random test data
-    for i, sched in enumerate(carrier):
-        all_data = [v for _,v in carrier[sched].items()]
-        # plot violin plot
-        axs[i].boxplot(all_data, showfliers=False)  # showfliers: Show the outliers beyond the caps.
-        axs[i].set_title(sched)
+    # fig, axs = plt.subplots(nrows=n_proccessors, ncols=n_schedulers, sharex=False, sharey=True)
+    fig = plt.figure(constrained_layout=True)
+    fig.suptitle(
+        "Stress-NG executions by Proccessor and Kernel configuration (Linux 6.1.59)"
+    )
 
-    # adding horizontal grid lines
-    stressors = [k for k,_ in carrier[sched].items()]
-    labels = [f'S{i+1}' for i in range(len(carrier[sched].values())) ]
+    # create subfigs
+    subfigs = fig.subfigures(nrows=n_proccessors, ncols=1)
+    for row, subfig_proccesor in enumerate(zip(subfigs, results)):
+        subfig, proccesor = subfig_proccesor
+        subfig.suptitle(f"{PROCCESORS[proccesor]}")
 
-    for ax in axs:
-        ax.yaxis.grid(True)
-        # ax.set_ylim([0,1])
-        ax.set_xticks([y + 1 for y in range(len(all_data))], labels=labels, rotation=45)
-        ax.set_xlabel('Stressors')
-        ax.set_ylabel('Normalized Bogo ops/s (real time)')
+        # create 1x2 subplots per subfig
+        axs = subfig.subplots(nrows=1, ncols=n_schedulers, sharey=True)
+        for col, ax_scheduder in enumerate(zip(axs, results[proccesor])):
+            ax, scheduder = ax_scheduder
+            ax.set_title(f"{scheduder}")
+            all_data = list(results[proccesor][scheduder].values())
+            ax.boxplot(
+                all_data, showfliers=False
+            )  # showfliers: Show the outliers beyond the caps.
+            # X labels
+            ax.set_xlabel("Stressors")
+            stressors = list(results[proccesor][scheduder].keys())
+            ax.set_xticks(
+                [y + 1 for y in range(len(all_data))], labels=stressors, rotation=45
+            )
+            # Y labels
+            ax.set_ylabel(f"{'Normalized' if is_normalized else ''} Bogo ops/s (real time)")
+            ax.yaxis.grid(True)
 
-    # # Add table vertical
-    # columns = ('Name')
-    # cell_text = []
-    # n_rows = len(stressors)
-    # for row in range(n_rows):
-    #     cell_text.append([stressors[row]])
-
-    # plt.table(
-    #     cellText=cell_text,
-    #     rowLabels=labels,
-    #     colLabels=columns,
-    #     loc='right'
-    # )
     plt.show()
