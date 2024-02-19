@@ -1,0 +1,136 @@
+stress-ng: info:  [16150] ipsec_mb: stressor will be skipped, CPU needs to be an x86-64 and a recent IPSec MB library is required.
+stress-ng: info:  [16150] plugin: no plugin-so specified, skipping stressor
+stress-ng: info:  [16150] rseq stressor will be skipped, rseq system call failed to register, errno=22 (Invalid argument)
+stress-ng: info:  [16150] secretmem stressor will be skipped, memfd_secret system call is not supported
+stress-ng: info:  [16150] disabled 'cpu-online' as it may hang or reboot the machine (enable it with the --pathological option)
+stress-ng: info:  [16150] disabled 'smi' as it may hang or reboot the machine (enable it with the --pathological option)
+stress-ng: info:  [16150] setting to a 1 min, 0 secs run per stressor
+stress-ng: info:  [16150] dispatching hogs: 24 af-alg, 24 atomic, 24 branch, 24 bsearch, 24 context, 24 cpu, 24 crypt, 24 eigen, 24 fma, 24 fp, 24 fp-error, 24 funccall, 24 funcret, 24 getrandom, 24 goto, 24 hash, 24 heapsort, 24 hsearch, 24 ioport, 24 jpeg, 24 judy, 24 list, 24 longjmp, 24 lsearch, 24 matrix, 24 matrix-3d, 24 mergesort, 24 mpfr, 24 nop, 24 numa, 24 opcode, 24 prefetch, 24 priv-instr, 24 qsort, 24 radixsort, 24 rdrand, 24 regs, 24 rotate, 24 shellsort, 24 skiplist, 24 sparsematrix, 24 str, 24 stream, 24 syncload, 24 tree,  24 tsc, 24 tsearch, 24 uprobe, 24 vecfp, 24 vecmath, 24 vecshuf, 24 vecwide, 24 vnni, 24 waitcpu, 24 wcs, 24 x86cpuid, 24 zlib
+stress-ng: info:  [16150] note: 24 cpus have scaling governors set to powersave and this can impact on performance; setting /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor to 'performance' may improve performance
+stress-ng: info:  [16152] af-alg: 105 cryptographic algorithms found in /proc/crypto
+stress-ng: info:  [16152] af-alg: 180 cryptographic algorithms in total (with defconfigs)
+stress-ng: info:  [16152] af-alg: 8 cryptographic algorithms are internal and may be unused
+stress-ng: info:  [16392] crypt: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (built without gcrypt library)
+stress-ng: info:  [16416] eigen: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (eigen C++ library, headers or g++ compiler not used)
+stress-ng: info:  [16647] heapsort: using method 'heapsort-libc'
+stress-ng: info:  [16951] jpeg: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (built without jpeg library)
+stress-ng: info:  [17202] judy: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (built without Judy.h or Judy library support)
+stress-ng: info:  [17524] mergesort: using method 'mergesort-libc'
+stress-ng: info:  [17993] numa: system has 1 of a maximum 4 memory NUMA nodes
+stress-ng: info:  [17551] mpfr: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (built without gmp.h, mpfr.h or libmpfr)
+stress-ng: info:  [18937] qsort: using method 'qsort-libc'
+stress-ng: info:  [18966] radixsort: using method 'radixsort-libc'
+stress-ng: info:  [18047] prefetch: using a 30720 KB L3 cache with prefetch method 'builtin'
+stress-ng: info:  [20053] sparsematrix: 10000 items in 500 x 500 sparse matrix (4.00% full)
+stress-ng: info:  [21393] stream: stressor loosely based on a variant of the STREAM benchmark code
+stress-ng: info:  [21393] stream: do NOT submit any of these results to the STREAM benchmark results
+stress-ng: info:  [21393] stream: Using cache size of 30720K
+stress-ng: info:  [25085] waitcpu: exercising instructions: nop pause tpause0 tpause1
+stress-ng: info:  [27618] zlib: this stressor is not implemented on this system: x86_64 Linux 6.1.59-intel-pk-standard gcc 13.2.0 (built without zlib library support)
+stress-ng: info:  [16623] hash:         hash      hashes/sec chi squared
+stress-ng: info:  [16623] hash:      adler32        77267.34       0.96
+stress-ng: info:  [16623] hash:       coffin       418982.62       0.96
+stress-ng: info:  [16623] hash:     coffin32       666635.41       1.05
+stress-ng: info:  [16623] hash:       crc32c       326556.78       0.98
+stress-ng: info:  [16623] hash:        djb2a       316561.94       0.97
+stress-ng: info:  [16623] hash:        fnv1a       477388.78       0.99
+stress-ng: info:  [16623] hash:       jenkin       228503.11       1.04
+stress-ng: info:  [16623] hash:        kandr       255334.83       0.97
+stress-ng: info:  [16623] hash:        knuth       335053.99       0.98
+stress-ng: info:  [16623] hash:     loselose      1011740.57       0.98
+stress-ng: info:  [16623] hash:         mid5    270232694.32       0.96
+stress-ng: info:  [16623] hash:     muladd32       206077.17       1.02
+stress-ng: info:  [16623] hash:     muladd64       149244.31       1.00
+stress-ng: info:  [16623] hash:    mulxror32       569160.28       1.00
+stress-ng: info:  [16623] hash:    mulxror64       866138.35       0.95
+stress-ng: info:  [16623] hash:   murmur3_32       700753.99       1.01
+stress-ng: info:  [16623] hash:        nhash       295039.30       1.08
+stress-ng: info:  [16623] hash:          pjw       201553.39       1.01
+stress-ng: info:  [16623] hash:         sdbm       306177.34       1.06
+stress-ng: info:  [16623] hash:     sedgwick       315154.71       0.93
+stress-ng: info:  [16623] hash:        sobel       365498.79       1.00
+stress-ng: info:  [16623] hash:          x17       284926.01       0.96
+stress-ng: info:  [16623] hash:          xor       319681.61       0.96
+stress-ng: info:  [16623] hash:     xorror32      3266031.61       0.98
+stress-ng: info:  [16623] hash:     xorror64       684825.16       1.03
+stress-ng: info:  [21417] stream: memory rate: 240.80 MB read/sec, 160.53 MB write/sec, 21.04 double precision Mflop/sec (instance 14)
+stress-ng: info:  [21427] stream: memory rate: 230.45 MB read/sec, 153.64 MB write/sec, 20.14 double precision Mflop/sec (instance 21)
+stress-ng: info:  [21398] stream: memory rate: 203.77 MB read/sec, 135.85 MB write/sec, 17.81 double precision Mflop/sec (instance 2)
+stress-ng: info:  [21411] stream: memory rate: 246.99 MB read/sec, 164.66 MB write/sec, 21.58 double precision Mflop/sec (instance 11)
+stress-ng: info:  [21423] stream: memory rate: 231.96 MB read/sec, 154.64 MB write/sec, 20.27 double precision Mflop/sec (instance 18)
+stress-ng: info:  [21393] stream: memory rate: 206.74 MB read/sec, 137.83 MB write/sec, 18.07 double precision Mflop/sec (instance 0)
+stress-ng: info:  [21402] stream: memory rate: 203.59 MB read/sec, 135.73 MB write/sec, 17.79 double precision Mflop/sec (instance 5)
+stress-ng: info:  [21400] stream: memory rate: 200.95 MB read/sec, 133.97 MB write/sec, 17.56 double precision Mflop/sec (instance 4)
+stress-ng: info:  [21414] stream: memory rate: 200.69 MB read/sec, 133.79 MB write/sec, 17.54 double precision Mflop/sec (instance 12)
+stress-ng: info:  [21418] stream: memory rate: 232.29 MB read/sec, 154.86 MB write/sec, 20.30 double precision Mflop/sec (instance 15)
+stress-ng: info:  [21416] stream: memory rate: 230.82 MB read/sec, 153.88 MB write/sec, 20.17 double precision Mflop/sec (instance 13)
+stress-ng: info:  [21431] stream: memory rate: 198.03 MB read/sec, 132.02 MB write/sec, 17.30 double precision Mflop/sec (instance 23)
+stress-ng: info:  [21399] stream: memory rate: 202.90 MB read/sec, 135.27 MB write/sec, 17.73 double precision Mflop/sec (instance 3)
+stress-ng: info:  [21395] stream: memory rate: 202.88 MB read/sec, 135.25 MB write/sec, 17.73 double precision Mflop/sec (instance 1)
+stress-ng: info:  [21429] stream: memory rate: 201.53 MB read/sec, 134.35 MB write/sec, 17.61 double precision Mflop/sec (instance 22)
+stress-ng: info:  [21419] stream: memory rate: 228.44 MB read/sec, 152.30 MB write/sec, 19.96 double precision Mflop/sec (instance 16)
+stress-ng: info:  [21425] stream: memory rate: 204.60 MB read/sec, 136.40 MB write/sec, 17.88 double precision Mflop/sec (instance 20)
+stress-ng: info:  [21409] stream: memory rate: 228.96 MB read/sec, 152.64 MB write/sec, 20.01 double precision Mflop/sec (instance 9)
+stress-ng: info:  [21406] stream: memory rate: 228.74 MB read/sec, 152.49 MB write/sec, 19.99 double precision Mflop/sec (instance 7)
+stress-ng: info:  [21410] stream: memory rate: 226.65 MB read/sec, 151.10 MB write/sec, 19.81 double precision Mflop/sec (instance 10)
+stress-ng: info:  [21424] stream: memory rate: 235.78 MB read/sec, 157.19 MB write/sec, 20.60 double precision Mflop/sec (instance 19)
+stress-ng: info:  [21422] stream: memory rate: 247.03 MB read/sec, 164.68 MB write/sec, 21.59 double precision Mflop/sec (instance 17)
+stress-ng: info:  [21408] stream: memory rate: 199.41 MB read/sec, 132.94 MB write/sec, 17.42 double precision Mflop/sec (instance 8)
+stress-ng: info:  [21404] stream: memory rate: 196.75 MB read/sec, 131.17 MB write/sec, 17.19 double precision Mflop/sec (instance 6)
+stress-ng: metrc: [16150] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [16150]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [16150] af-alg            39970     60.24      0.15      1.96       663.54       18948.32
+stress-ng: metrc: [16150] atomic            26758     60.41    111.26      0.01       442.98         240.47
+stress-ng: metrc: [16150] branch          4470414     60.12     28.21      0.00     74357.78      158421.88
+stress-ng: metrc: [16150] bsearch            7848     60.15     27.82      0.00       130.47         282.03
+stress-ng: metrc: [16150] context          155498     60.14     16.21     11.60      2585.47        5591.59
+stress-ng: metrc: [16150] cpu               55697     60.13     27.74      0.01       926.21        2006.65
+stress-ng: metrc: [16150] fma            71260225     60.12     27.54      0.00   1185303.23     2586915.14
+stress-ng: metrc: [16150] fp                 7506     60.32     27.95      0.00       124.44         268.50
+stress-ng: metrc: [16150] fp-error       20444151     60.14     27.80      0.00    339932.74      735383.89
+stress-ng: metrc: [16150] funccall          20520     60.49     28.16      0.00       339.24         728.73
+stress-ng: metrc: [16150] funcret          665684     60.13     27.68      0.00     11071.28       24045.01
+stress-ng: metrc: [16150] getrandom       1631137     60.11      0.18     27.42     27135.84       59091.67
+stress-ng: metrc: [16150] goto           31287992     60.14     27.77      0.00    520271.34     1126577.02
+stress-ng: metrc: [16150] hash            4361128     60.12     27.66      0.00     72538.47      157638.57
+stress-ng: metrc: [16150] heapsort            275     60.07     27.60      0.00         4.58           9.96
+stress-ng: metrc: [16150] hsearch          202058     60.09     27.74      0.00      3362.40        7283.42
+stress-ng: metrc: [16150] ioport           178562     60.09     25.30      1.33      2971.49        6705.50
+stress-ng: metrc: [16150] list               2199     60.09     27.71      0.00        36.60          79.35
+stress-ng: metrc: [16150] longjmp         4079951     60.09     27.63      0.00     67898.57      147661.16
+stress-ng: metrc: [16150] lsearch             249     60.10     27.65      0.00         4.14           9.00
+stress-ng: metrc: [16150] matrix           168756     60.08     27.70      0.00      2809.05        6092.18
+stress-ng: metrc: [16150] matrix-3d         15912     60.12     27.62      0.12       264.69         573.68
+stress-ng: metrc: [16150] mergesort           865     60.06     27.58      0.02        14.40          31.34
+stress-ng: metrc: [16150] nop             7500608     60.10     27.67      0.00    124811.42      271055.02
+stress-ng: metrc: [16150] numa              11261     60.08     27.68      0.04       187.42         406.30
+stress-ng: metrc: [16150] opcode            34478     60.05      6.09      3.08       574.12        3759.98
+stress-ng: metrc: [16150] prefetch            103     60.71     29.58      0.18         1.70           3.46
+stress-ng: metrc: [16150] priv-instr     21094759     60.05      4.95     22.65    351308.61      764368.11
+stress-ng: metrc: [16150] qsort               593     60.04     27.60      0.02         9.88          21.47
+stress-ng: metrc: [16150] radixsort           562     60.05     27.82      0.03         9.36          20.18
+stress-ng: metrc: [16150] rdrand           373312     60.07     27.87      0.00      6214.84       13393.95
+stress-ng: metrc: [16150] regs             282585     60.05     27.59      0.00      4706.10       10243.35
+stress-ng: metrc: [16150] rotate          1791590     60.05     27.75      0.00     29834.05       64550.75
+stress-ng: metrc: [16150] shellsort           447     60.03     27.60      0.00         7.45          16.19
+stress-ng: metrc: [16150] skiplist         176776     60.06     27.81      0.00      2943.44        6355.36
+stress-ng: metrc: [16150] sparsematrix        742     60.04     27.73      0.18        12.36          26.58
+stress-ng: metrc: [16150] str            11415151     60.03     28.23      0.00    190149.09      404257.22
+stress-ng: metrc: [16150] stream            10386     60.04     27.82      0.11       173.00         371.91
+stress-ng: metrc: [16150] syncload           7874     60.12     26.91      0.95       130.98         282.64
+stress-ng: metrc: [16150] tree                 24     60.02     27.48      0.08         0.40           0.87
+stress-ng: metrc: [16150] tsc            32118371     60.02     28.05      0.00    535113.94     1145203.64
+stress-ng: metrc: [16150] tsearch             552     60.14     28.29      0.02         9.18          19.50
+stress-ng: metrc: [16150] uprobe           760298     60.01      0.13      4.69     12670.02      157680.30
+stress-ng: metrc: [16150] vecfp             65280     60.10     28.78      0.00      1086.25        2267.86
+stress-ng: metrc: [16150] vecmath          133578     60.01     28.81      0.00      2225.85        4635.32
+stress-ng: metrc: [16150] vecshuf           20010     60.03     28.48      0.00       333.33         702.65
+stress-ng: metrc: [16150] vecwide         1532902     60.01     28.89      0.00     25544.37       53065.63
+stress-ng: metrc: [16150] vnni            3040590     60.01     30.19      0.00     50671.76      100721.73
+stress-ng: metrc: [16150] waitcpu            2267     60.04     30.11      0.00        37.76          75.29
+stress-ng: metrc: [16150] wcs            10875569     60.00     30.24      0.00    181248.63      359611.44
+stress-ng: metrc: [16150] x86cpuid        1881088     60.01     34.27      0.01     31344.46       54883.66
+stress-ng: info:  [16150] skipped: 288: cpu-online (24) crypt (24) eigen (24) ipsec-mb (24) jpeg (24) judy (24) mpfr (24) plugin (24) rseq (24) secretmem (24) smi (24) zlib (24)
+stress-ng: info:  [16150] failed: 0
+stress-ng: info:  [16150] metrics untrustworthy: 0
+stress-ng: info:  [16150] successful run completed in 1 min, 2.35 secs
