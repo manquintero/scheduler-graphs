@@ -1,5 +1,6 @@
 """Generate BoxPlots from the stress-ng executions."""
 
+import copy
 import itertools
 import os
 from matplotlib import pyplot as plt
@@ -7,7 +8,7 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 import numpy as np
 
-from lib.utils import PROCESSOR, SCHEDULERS
+from lib.utils import PROCESSOR, SCHEDULERS, get_subplot_shape
 from lib.utils import list_reports
 from lib.utils import read_content
 
@@ -21,6 +22,7 @@ if __name__ == "__main__":
     means = dict()
 
     # Parse stress-ng results from files
+    n_stressors = 0
     for processor, scheduler in itertools.product(PROCESSOR, SCHEDULERS):
         # Initiallize per chip-sched
         if processor not in results:
@@ -41,6 +43,9 @@ if __name__ == "__main__":
                     results[processor][scheduler][stressor] = []
                 results[processor][scheduler][stressor].append(v)
 
+    # Keep a copy for raw analysis
+    original_results = copy.deepcopy(results)
+
     # Normalize with Min-Max
     if is_normalized:
         for processor, schedulers in results.items():
@@ -59,12 +64,56 @@ if __name__ == "__main__":
     n_processors = len(results.keys())
     n_schedulers = len(results.items())
 
-    fig = plt.figure(constrained_layout=True, figsize=(20, 10))
+    #
+    # Graficar todas el histograma de las pruebas de
+    #
+    n_stressors = 0
+    for schedulers in results.values():
+        for stressors in schedulers.values():
+            n_stressors = max(n_processors, len(stressors))
+
+    nrows, ncols = get_subplot_shape(n_stressors)
+    for processor, schedulers in original_results.items():
+        for scheduder, stressors in schedulers.items():
+            fig, axs = plt.subplots(nrows, ncols, figsize=(20, 10), tight_layout=True)
+            fig.suptitle(
+                f"Ejecuciones de Stress-NG para Procesador {processor} y Kernel (Linux 6.1.59) + {scheduder}",
+                size=20,
+            )
+            # Iterate by stressor to generate one plot with all executions
+            for n, stressor in enumerate(stressors):
+                bogos = stressors[stressor]
+                row = n // ncols
+                if n % ncols == 0:
+                    col = 0
+                else:
+                    col += 1
+
+                ylabel = "" if col else "Bogo ops/s (real time)"
+                # Valores
+                ax = axs[row][col]
+                ax.plot(bogos, linewidth=1, label="bogus operations per second")
+                ax.axhline(
+                    np.mean(bogos), color="red", linestyle="--", label="Promedio"
+                )
+                # Etiquetas
+                ax.ticklabel_format(style="plain")
+                ax.yaxis.grid(False)
+                ax.set_ylabel(ylabel)
+                ax.set_title(stressor)
+
+            handles, labels = plt.gca().get_legend_handles_labels()
+            fig.legend(handles, labels, loc="lower right", ncols=len(labels))
+            fig.supxlabel("Ciclos")
+            plt.savefig(f"images/stressors_{processor}_{scheduder}.png")
+
+    #
+    # Graficar boxplot de las ejecuciones
+    #
+    fig = plt.figure(constrained_layout=True, figsize=(20, 10), tight_layout=True)
     fig.suptitle(
         "Ejecuciones de Stress-NG por Procesador y configuración de Kernel (Linux 6.1.59)"
     )
-
-    # create subfigs
     subfigs = fig.subfigures(nrows=n_processors, ncols=1)
     for row, subfig_processor in enumerate(zip(subfigs, results)):
         subfig, processor = subfig_processor
@@ -92,7 +141,9 @@ if __name__ == "__main__":
             ax.yaxis.grid(True)
     plt.savefig("images/ejecuciones.png")
 
-    # Graficar coeficientes
+    #
+    # Graficar coeficientes de varición
+    #
     stressors = tuple(variations[processor][scheduder].keys())
     x = np.arange(len(stressors))
     width = 0.2
@@ -115,7 +166,6 @@ if __name__ == "__main__":
     ax.set_ylabel("Coeficiente de Variación")
     ax.yaxis.grid(True)
     ax.legend(loc="upper left", ncols=2)
-    plt.show()
     plt.savefig("images/coeficientes.png")
 
     # Graficar el resumen de valores
@@ -125,8 +175,10 @@ if __name__ == "__main__":
     ax.axis("off")
     ax.axis("tight")
 
+    #
     # Tabla
-    delta_template = "Cambio fraccionario ({})"
+    #
+    delta_template = "Cambio fraccionario ({}) %"
     means_df = pd.DataFrame()
     for processor, schedulers in means.items():
         # Keep track of the schedulers to calculat the delta
@@ -137,11 +189,10 @@ if __name__ == "__main__":
             scheduder_columns.append(attribute)
         attribute = delta_template.format(processor)
         means_df[attribute] = (
-            (means_df[scheduder_columns[-1]] - means_df[scheduder_columns[0]])
+            100
+            * (means_df[scheduder_columns[-1]] - means_df[scheduder_columns[0]])
             / means_df[scheduder_columns[0]]
-            * 100
         )
-
     # Preparar colores para
     colors = []
     n_rows, n_col = means_df.shape
@@ -153,20 +204,19 @@ if __name__ == "__main__":
         for processor in PROCESSOR
     ]
     for row_name, row in means_df.iterrows():
-        colors_in_column = ("aliceblue " * n_col).split()
+        colors_in_column = ("white " * n_col).split()
         for i, col_name in index_processors:
-            colors_in_column[i] = "tomato" if row[col_name] < 0 else "lightgreen"
+            colors_in_column[i] = "tomato" if row[col_name] <= 0 else "lightgreen"
         colors.append(colors_in_column)
 
-    # Graficar
     ax.table(
-        cellText=means_df.astype(np.int32).to_numpy(),
+        cellText=means_df.to_numpy().round(2),
         cellColours=colors,
-        cellLoc="center",
+        cellLoc="right",
         rowLabels=stressors.index,
         colLabels=means_df.columns,
         loc="center",
     )
     fig.tight_layout()
-    plt.show()
     plt.savefig("images/tabla.png")
+    means_df.to_excel("reports/means.xlsx")
